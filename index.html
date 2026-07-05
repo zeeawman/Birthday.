@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(145deg, #0b0f19, #111827, #1e1b4b);
+            --glass-bg: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shine: rgba(255, 255, 255, 0.15);
+            --ios-blue: #007aff;
+            --accent-pink: #ff3b30;
+            --accent-gold: #ffcc00;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg-gradient);
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Fluid background aura meshes */
+        .aura {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+        .aura-1 { width: 400px; height: 400px; background: #6366f1; top: -10%; left: -10%; }
+        .aura-2 { width: 500px; height: 500px; background: #db2777; bottom: -10%; right: -10%; }
+
+        /* Premium iOS Glass Device Wrapper */
+        .iphone-shell {
+            width: 92%;
+            max-width: 400px;
+            height: 85vh;
+            max-height: 780px;
+            background: rgba(10, 10, 12, 0.4);
+            backdrop-filter: blur(40px) saturate(200%);
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
+            border: 1px solid var(--glass-border);
+            border-radius: 48px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8), inset 0 1px 2px var(--glass-shine);
+            z-index: 10;
+            position: relative;
+            overflow: hidden;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Dynamic Island Dynamic Element */
+        .dynamic-island-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding-top: 10px;
+            margin-bottom: 25px;
+            z-index: 100;
+        }
+
+        .dynamic-island {
+            width: 110px;
+            height: 30px;
+            background: #000000;
+            border-radius: 20px;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .dynamic-island.expanded {
+            width: 260px;
+            height: 45px;
+            background: #050505;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.85rem;
+            color: var(--accent-gold);
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.2);
+        }
+
+        /* Screens Layout */
+        .main-stage {
+            flex: 1;
+            position: relative;
+            margin-bottom: 85px;
+        }
+
+        .screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .screen.active { display: flex; animation: smoothFade 0.5s ease forwards; }
+
+        @keyframes smoothFade {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Creator Config Mode Overlay */
+        .setup-overlay {
+            position: absolute;
+            inset: 0;
+            background: #0b0f19;
+            z-index: 200;
+            border-radius: 48px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .setup-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 10px; background: linear-gradient(to right, #fff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; font-size: 0.8rem; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 6px; font-weight: 600; }
+        .input-group input, .input-group textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: #fff; font-size: 0.9rem; }
+        .input-group textarea { resize: none; height: 80px; }
+        .file-btn { background: var(--ios-blue); color: white; padding: 12px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; text-align: center; display: block; margin-top: 5px; }
+        .save-btn { background: linear-gradient(to right, #ec4899, #8b5cf6); border: none; padding: 14px; border-radius: 14px; color: white; font-weight: 700; cursor: pointer; margin-top: 10px; box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3); }
+
+        /* Countdown Visualizer */
+        .clock-display { display: flex; gap: 12px; margin: 25px 0; }
+        .clock-tile { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.06); padding: 16px 12px; border-radius: 20px; min-width: 68px; backdrop-filter: blur(10px); }
+        .tile-val { font-size: 1.8rem; font-weight: 700; display: block; color: #fff; }
+        .tile-lbl { font-size: 0.65rem; text-transform: uppercase; color: rgba(255,255,255,0.4); letter-spacing: 0.5px; margin-top: 4px; display: block; }
+
+        /* Liquid Luxury Cake Module */
+        .cake-platform { position: relative; width: 220px; height: 220px; margin-top: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .glow-ring { position: absolute; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(236,72,153,0.2) 0%, transparent 70%); animation: ripple 2s infinite ease-in-out; }
+        .cake-graphic { width: 130px; height: 80px; background: linear-gradient(135deg, #f472b6, #db2777); border-radius: 20px; position: relative; top: 20px; box-shadow: 0 15px 35px rgba(219,39,119,0.4); }
+        .cake-cream { position: absolute; top: 0; left: 0; width: 100%; height: 25px; background: #ffffff; border-radius: 20px 20px 5px 5px; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.1)); }
+        .cake-candle { position: absolute; top: -25px; left: 60px; width: 8px; height: 30px; background: linear-gradient(to top, #38bdf8, #0ea5e9); border-radius: 4px; }
+        .cake-flame { position: absolute; top: -43px; left: 57px; width: 14px; height: 22px; background: radial-gradient(circle, #ffea00, #ff5500); border-radius: 50% 50% 20% 20%; animation: flameWobble 0.6s infinite alternate; box-shadow: 0 0 15px #ff5500; }
+        
+        @keyframes flameWobble { 0% { transform: scale(1) rotate(-3deg); } 100% { transform: scale(1.15) rotate(3deg); } }
+        @keyframes ripple { 0% { transform: scale(0.8); opacity: 0.5; } 50% { opacity: 1; } 100% { transform: scale(1.3); opacity: 0; } }
+
+        /* Showcasing the Friend's Card */
+        .avatar-holder { width: 150px; height: 150px; border-radius: 30px; padding: 6px; background: linear-gradient(135deg, #a855f7, #ec4899); box-shadow: 0 20px 40px rgba(0,0,0,0.4); margin-bottom: 25px; transform: rotate(-3deg); }
+        .avatar-img { width: 100%; height: 100%; border-radius: 24px; object-fit: cover; background: #1e293b; }
+        .message-viewport { max-height: 200px; overflow-y: auto; padding: 15px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 24px; font-size: 0.95rem; line-height: 1.6; color: rgba(255, 255, 255, 0.9); text-align: left; }
+
+        /* Liquid Dock System UI */
+        .dock-container { position: absolute; bottom: 20px; left: 16px; right: 16px; height: 76px; background: rgba(20, 20, 25, 0.3); backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 28px; display: flex; justify-content: space-evenly; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); z-index: 90; }
+        .dock-app { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); cursor: not-allowed; opacity: 0.3; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+        .dock-app.unlocked { cursor: pointer; opacity: 1; background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.1); }
+        .dock-app.active { transform: translateY(-8px) scale(1.12); background: linear-gradient(135deg, #3b82f6, #8b5cf6); box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4); border-color: rgba(255,255,255,0.2); }
+
+        /* Floating Balloon Layer */
+        .particle-stage { position: absolute; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; border-radius: 48px; }
+        .balloon-item { position: absolute; bottom: -80px; width: 40px; height: 50px; border-radius: 50% 50% 50% 50% / 42% 42% 58% 58%; animation: riseUp 6s linear forwards; }
+        @keyframes riseUp { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(-90vh) rotate(10deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="aura aura-1"></div>
+    <div class="aura aura-2"></div>
+
+    <div class="iphone-shell">
+        
+        <div class="setup-overlay" id="creator-panel">
+            <div class="setup-title">Configure Surprise Website</div>
+            <p style="font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-bottom: 20px;">Fill this out on your device. Once saved, this setup panel vanishes forever, lock-sealing your configuration into the app code.</p>
+            
+            <div class="input-group">
+                <label>Target Date & Time</label>
+                <input type="datetime-local" id="setup-time" value="2026-07-06T00:00">
+            </div>
+            
+            <div class="input-group">
+                <label>Select Friend's Picture</label>
+                <input type="file" id="setup-img" accept="image/*" style="display:none;" onchange="processImage(this)">
+                <button type="button" class="file-btn" onclick="document.getElementById('setup-img').click()">Choose Image File</button>
+                <span id="file-status" style="font-size:0.75rem; color:#10b981; display:block; margin-top:5px;"></span>
+            </div>
+
+            <div class="input-group">
+                <label>Your Deep Birthday Wish</label>
+                <textarea id="setup-msg" placeholder="Write something meaningful, premium, and legendary..."></textarea>
+            </div>
+
+            <button type="button" class="save-btn" onclick="sealWebsite()">Lock & Generate Website</button>
+        </div>
+
+        <div class="particle-stage" id="stage-particles"></div>
+
+        <div class="dynamic-island-container">
+            <div class="dynamic-island" id="island-pod">Locked</div>
+        </div>
+
+        <div class="main-stage">
+            
+            <div class="screen active" id="view-countdown">
+                <h2 style="font-size: 1.6rem; font-weight: 700;">Awaiting Midnight</h2>
+                <p style="font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-top: 4px;">System locked until the calendar flips.</p>
+                
+                <div class="clock-display">
+                    <div class="clock-tile"><span class="tile-val" id="d-day">00</span><span class="tile-lbl">Days</span></div>
+                    <div class="clock-tile"><span class="tile-val" id="d-hr">00</span><span class="tile-lbl">Hours</span></div>
+                    <div class="clock-tile"><span class="tile-val" id="d-min">00</span><span class="tile-lbl">Mins</span></div>
+                    <div class="clock-tile"><span class="tile-val" id="d-sec">00</span><span class="tile-lbl">Secs</span></div>
+                </div>
+            </div>
+
+            <div class="screen" id="view-cake">
+                <h2 style="font-size: 1.6rem; font-weight: 700;">Blow the Candle 🎂</h2>
+                <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6); max-width: 260px;">Tap the cake directly to blow out the light and slice the surprise wrapper open.</p>
+                
+                <div class="cake-platform" onclick="handleCakeSlice()">
+                    <div class="glow-ring"></div>
+                    <div class="cake-graphic">
+                        <div class="cake-cream"></div>
+                        <div class="cake-candle"></div>
+                        <div class="cake-flame" id="flame-element"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="screen" id="view-card">
+                <div class="avatar-holder">
+                    <img src="" id="display-avatar" class="avatar-img" alt="Celebrant">
+                </div>
+                <h2 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.5px;">Happy Birthday! ✨</h2>
+                <div class="message-viewport" id="display-message"></div>
+            </div>
+
+        </div>
+
+        <div class="dock-container">
+            <div class="dock-app active" id="app-1" onclick="navigateTo(1, 'view-countdown')">⏳</div>
+            <div class="dock-app" id="app-2" onclick="navigateTo(2, 'view-cake')">🎂</div>
+            <div class="dock-app" id="app-3" onclick="navigateTo(3, 'view-card')">🎁</div>
+        </div>
+
+    </div>
+
+    <script>
+        let configData = { targetTime: 0, imageRaw: "", customMessage: "" };
+        let timingEngine;
+        let balloonEngine;
+        let isSystemReady = false;
+        let isCakeCut = false;
+
+        function processImage(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    configData.imageRaw = e.target.result;
+                    document.getElementById('file-status').innerText = "✓ Image attached successfully";
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function sealWebsite() {
+            const timeVal = document.getElementById('setup-time').value;
+            const msgVal = document.getElementById('setup-msg').value;
+
+            if(!timeVal || !msgVal || !configData.imageRaw) {
+                alert("Please fill out all configuration settings (Date, Image, and Message) first!");
+                return;
+            }
+
+            configData.targetTime = new Date(timeVal).getTime();
+            configData.customMessage = msgVal;
+
+            // Inject content immediately
+            document.getElementById('display-avatar').src = configData.imageRaw;
+            document.getElementById('display-message').innerText = configData.customMessage;
+
+            // Hide Setup Screen Panel
+            document.getElementById('creator-panel').style.display = 'none';
+            
+            startCountdownEngine();
+        }
+
+        function startCountdownEngine() {
+            timingEngine = setInterval(() => {
+                const presentTime = new Date().getTime();
+                const gap = configData.targetTime - presentTime;
+
+                if(gap <= 0) {
+                    clearInterval(timingEngine);
+                    triggerMidnightRelease();
+                } else {
+                    const days = Math.floor(gap / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((gap % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((gap % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((gap % (1000 * 60)) / 1000);
+
+                    document.getElementById('d-day').innerText = days < 10 ? "0"+days : days;
+                    document.getElementById('d-hr').innerText = hours < 10 ? "0"+hours : hours;
+                    document.getElementById('d-min').innerText = minutes < 10 ? "0"+minutes : minutes;
+                    document.getElementById('d-sec').innerText = seconds < 10 ? "0"+seconds : seconds;
+                }
+            }, 1000);
+        }
+
+        function triggerMidnightRelease() {
+            isSystemReady = true;
+            
+            // Expand Dynamic Island fluidly
+            const island = document.getElementById('island-pod');
+            island.classList.add('expanded');
+            island.innerText = "🎉 It's Time! Open Cake App";
+
+            // Unlock Stage 2 Dock App item
+            document.getElementById('app-2').classList.add('unlocked');
+            
+            // Auto-navigate smoothly into the Cake screen area
+            navigateTo(2, 'view-cake');
+            deployLiquidBalloons();
+        }
+
+        function navigateTo(appIndex, screenId) {
+            if(appIndex === 2 && !isSystemReady) return;
+            if(appIndex === 3 && !isCakeCut) return;
+
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.dock-app').forEach(a => a.classList.remove('active'));
+
+            document.getElementById(screenId).classList.add('active');
+            document.getElementById('app-' + appIndex).classList.add('active');
+        }
+
+        function deployLiquidBalloons() {
+            if(balloonEngine) return;
+            const stage = document.getElementById('stage-particles');
+            const colorPalette = ['#ff2d55', '#5856d6', '#ffcc00', '#34c759', '#af52de', '#5ac8fa'];
+
+            balloonEngine = setInterval(() => {
+                const element = document.createElement('div');
+                element.classList.add('balloon-item');
+                
+                const variantColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                const randomX = Math.random() * 85;
+                const dynamicScale = 30 + (Math.random() * 25);
+
+                element.style.left = `${randomX}%`;
+                element.style.width = `${dynamicScale}px`;
+                element.style.height = `${dynamicScale * 1.25}px`;
+                element.style.backgroundColor = variantColor;
+                element.style.boxShadow = `inset -4px -4px 12px rgba(0,0,0,0.2), 0 12px 24px rgba(0,0,0,0.15)`;
+                
+                stage.appendChild(element);
+                setTimeout(() => { element.remove(); }, 6000);
+            }, 350);
+        }
+
+        function handleCakeSlice() {
+            if(isCakeCut) return;
+            isCakeCut = true;
+
+            document.getElementById('flame-element').style.display = 'none';
+            
+            const island = document.getElementById('island-pod');
+            island.innerText = "🎁 Gift Unlocked!";
+            
+            document.getElementById('app-3').classList.add('unlocked');
+
+            setTimeout(() => {
+                navigateTo(3, 'view-card');
+                island.classList.remove('expanded');
+                island.innerText = "Active ✨";
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
